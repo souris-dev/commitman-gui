@@ -1,23 +1,50 @@
 import logo from './logo.svg';
 import './App.css';
+import TitleBar from 'frameless-titlebar';
+import { defaultTemplate } from './menus';
 
 function App() {
   return (
-    <div className="App">
+    <div className="ExampleContainer">
+        <TitleBar
+          title="Commit Man"
+          menu={defaultTemplate}
+          theme={{
+            barTheme: 'dark',
+            barShowBorder: true,
+            menuDimItems: false,
+            showIconDarwin: false
+          }}
+          platform="win32"
+          />
+        <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
+                  
         <p>
-          Edit <code>src/App.js</code> and save to reload.
+                      Start by Opening a Repo!
         </p>
+        <br />
         <a
           className="App-link"
-          href="https://reactjs.org"
+          href="/"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Learn React
+                      Open A Repo
+        </a>
+                  <p> or, </p>
+        <a
+          className="App-link"
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Read the manual
         </a>
       </header>
+    </div>
+
     </div>
   );
 }
