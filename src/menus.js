@@ -1,18 +1,20 @@
 //import { ipcRenderer, shell } from 'electron';
-const electron = window.require('electron');
+const { ipcRenderer } = window.require('electron');
 
-export const defaultTemplate = [
+export const menus = [
     {
         label: 'File',
         submenu: [
             {
                 label: 'Open Repo',
+                click: (item, win, e) => {
+                    ipcRenderer.send('open-repo');
+                }
             },
             {
                 label: 'Exit',
                 click: (item, win, e) => {
-                    if (electron.remote)
-                        electron.remote.getCurrentWindow().close();
+                    ipcRenderer.invoke('exit-app');
                 }
             }
         ]
