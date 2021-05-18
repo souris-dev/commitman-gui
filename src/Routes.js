@@ -4,6 +4,7 @@ import { Router, Switch, Route } from "react-router-dom";
 import StartingPage from './StartingPage/StartingPage.jsx';
 import FileBrowsePage from './FileBrowsePage/FileBrowsePage.jsx';
 import history from './history';
+import DiffEditorPage from "./DiffEditorPage/DiffEditorPage.jsx";
 
 export default function Routes() {
     return (
@@ -11,6 +12,7 @@ export default function Routes() {
             <Switch>
                 <Route path="/" exact component={StartingPage} />
                 <Route path="/OpenedRepo" component={FileBrowsePage} />
+                <Route path="/ShowDiff" component={DiffEditorPage} />
             </Switch>
         </Router>
     )

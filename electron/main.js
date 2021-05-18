@@ -2,9 +2,29 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const fs = require('fs');
 const isDev = require('electron-is-dev');   
 const path = require('path');
+const { open } = require('sqlite');
+const sqlite3 = require('sqlite3');
+const { loader } = require("@monaco-editor/react");
  
 let mainWindow;
- 
+
+function ensureFirstBackSlash(str) {
+    return str.length > 0 && str.charAt(0) !== "/"
+        ? "/" + str
+        : str;
+}
+
+function uriFromPath(_path) {
+    const pathName = path.resolve(_path).replace(/\\/g, "/");
+    return encodeURI("file://" + ensureFirstBackSlash(pathName));
+}
+
+loader.config({
+    paths: {
+        vs: path.join(__dirname, "../node_modules/monaco-editor/min/vs")
+
+}});
+
 function createWindow() {
     mainWindow = new BrowserWindow({
         width: 800,
@@ -57,16 +77,89 @@ function createWindow() {
                         name: file.name,
                         isDir: file.isDirectory(),
                         isFile: file.isFile(),
+                        filePath: path.join(result.filePaths[0], file.name)
                     });
                 });
 
-                event.reply('open-repo-reply', { validRepo: isRepo, files: fileStruct });
+                event.reply('open-repo-reply', {
+                    validRepo: isRepo,
+                    files: fileStruct,
+                    repoName: path.basename(result.filePaths[0]),
+                    repoPath: result.filePaths[0]
+                });
             }
         );
     });
 
-    ipcMain.handle('get-dir-contents', async (event, args) => {
+    ipcMain.handle('get-dir-contents', async (event, pathOfDir) => {
+        fs.readdir(pathOfDir,
+            { withFileTypes: true },
+            (err, files) => {
+                var fileStruct = [];
+                files.forEach(file => {
+                    fileStruct.push({
+                        name: file.name,
+                        isDir: file.isDirectory(),
+                        isFile: file.isFile(),
+                        filePath: path.join(pathOfDir, file.name)
+                    });
+                });
 
+                event.reply('get-dir-contents-reply', {
+                    files: fileStruct,
+                    pathOfFolder: pathOfDir,
+                    pathOfParentFolder: path.dirname(pathOfDir)
+                });
+            }
+        );
+    });
+
+    ipcMain.on('get-commit-history', async (event, repoPath) => {
+        const logdb = await open({
+            filename: path.join(repoPath, '.cm', 'log.db'),
+            driver: sqlite3.Database,
+        });
+
+        const result = await logdb.all('SELECT number, message, dtime from log');
+        await logdb.close();
+        event.reply('get-commit-history-reply', result);
+    });
+
+    ipcMain.on('get-file-contents', async (event, repoPath, filePath, vOrig, vNew) => {
+        var pathDiff = path.relative(repoPath, filePath);
+        var oldVersionPath = filePath;
+        var newVersionPath = filePath;
+
+        var oldFileContents = "";
+        var newFileContents = "";
+
+        if (vOrig !== -1) {
+            oldVersionPath = path.join(repoPath, '.cm', 'v' + vOrig, pathDiff);
+        }
+        if (vNew !== -1) {
+            newVersionPath = path.join(repoPath, '.cm', 'v' + vNew, pathDiff);
+        }
+
+        fs.readFile(oldVersionPath, (err, data) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            oldFileContents = data.toString();
+
+            fs.readFile(newVersionPath, (erro, dataNew) => {
+                if (erro) {
+                    console.log(err);
+                    return;
+                }
+                newFileContents = dataNew.toString();
+
+                event.reply("get-file-contents-reply", {
+                    originalContent: oldFileContents,
+                    newContent: newFileContents,
+                });
+            })
+        })
     });
 }
 app.on('ready', createWindow);
