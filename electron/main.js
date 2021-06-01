@@ -4,34 +4,19 @@ const isDev = require('electron-is-dev');
 const path = require('path');
 const { open } = require('sqlite');
 const sqlite3 = require('sqlite3');
-const { loader } = require("@monaco-editor/react");
+const { shell } = require('electron');
+const os = require('os');
+const { exec } = require('child_process');
  
 let mainWindow;
 
-function ensureFirstBackSlash(str) {
-    return str.length > 0 && str.charAt(0) !== "/"
-        ? "/" + str
-        : str;
-}
-
-function uriFromPath(_path) {
-    const pathName = path.resolve(_path).replace(/\\/g, "/");
-    return encodeURI("file://" + ensureFirstBackSlash(pathName));
-}
-
-loader.config({
-    paths: {
-        vs: path.join(__dirname, "../node_modules/monaco-editor/min/vs")
-
-}});
-
 function createWindow() {
     mainWindow = new BrowserWindow({
-        width: 800,
-        height: 600,
+        width: 1000,
+        height: 800,
         //titleBarStyle: "hidden",
         show: false,
-        //frame: false,
+        frame: false,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
@@ -63,35 +48,41 @@ function createWindow() {
             event.reply('open-repo-reply', undefined);
         }
 
-        fs.readdir(result.filePaths[0],
-            { withFileTypes: true },
-            (err, files) => {
-                var fileStruct = [];
-                var isRepo = false;
+        try {
+            fs.readdir(result.filePaths[0],
+                { withFileTypes: true },
+                (err, files) => {
+                    var fileStruct = [];
+                    var isRepo = false;
 
-                files.forEach(file => {
-                    if (file.name === ".cm" && file.isDirectory()) {
-                        isRepo = true;
-                    }
-                    fileStruct.push({
-                        name: file.name,
-                        isDir: file.isDirectory(),
-                        isFile: file.isFile(),
-                        filePath: path.join(result.filePaths[0], file.name)
+                    files.forEach(file => {
+                        if (file.name === ".cm" && file.isDirectory()) {
+                            isRepo = true;
+                        }
+                        fileStruct.push({
+                            name: file.name,
+                            isDir: file.isDirectory(),
+                            isFile: file.isFile(),
+                            filePath: path.join(result.filePaths[0], file.name)
+                        });
                     });
-                });
 
-                event.reply('open-repo-reply', {
-                    validRepo: isRepo,
-                    files: fileStruct,
-                    repoName: path.basename(result.filePaths[0]),
-                    repoPath: result.filePaths[0]
-                });
-            }
-        );
+                    event.reply('open-repo-reply', {
+                        validRepo: isRepo,
+                        files: fileStruct,
+                        repoName: path.basename(result.filePaths[0]),
+                        repoPath: result.filePaths[0]
+                    });
+                }
+            );
+        }
+        catch (error) {
+            // do nothing but reply so that the rendered thread continues
+            event.reply('open-repo-reply', undefined);
+        }
     });
 
-    ipcMain.handle('get-dir-contents', async (event, pathOfDir) => {
+    ipcMain.on('get-dir-contents', async (event, pathOfDir) => {
         fs.readdir(pathOfDir,
             { withFileTypes: true },
             (err, files) => {
@@ -120,10 +111,34 @@ function createWindow() {
             driver: sqlite3.Database,
         });
 
-        const result = await logdb.all('SELECT number, message, dtime from log');
+        const result = await logdb.all('SELECT number, message, datetime as dtime from log');
         await logdb.close();
         event.reply('get-commit-history-reply', result);
     });
+
+    ipcMain.on('get-commit-history-file', async (event, repoPath, filePath) => {
+        const logdb = await open({
+            filename: path.join(repoPath, '.cm', 'log.db'),
+            driver: sqlite3.Database,
+        });
+
+        const result = await logdb.all('SELECT number, message, datetime as dtime from log');
+        
+        var existInVersions = [];
+        var pathDiff = path.relative(repoPath, filePath);
+
+        result.forEach((rItem) => {
+            var folderName = "" + rItem["number"].toString();
+            var versionedFilePath = path.join(repoPath, '.cm', folderName, pathDiff);
+
+            if (fs.existsSync(versionedFilePath)) {
+                existInVersions.push(rItem);
+            }
+        });
+
+        await logdb.close();
+        event.reply('get-commit-history-file-reply', existInVersions);
+    })
 
     ipcMain.on('get-file-contents', async (event, repoPath, filePath, vOrig, vNew) => {
         var pathDiff = path.relative(repoPath, filePath);
@@ -134,10 +149,10 @@ function createWindow() {
         var newFileContents = "";
 
         if (vOrig !== -1) {
-            oldVersionPath = path.join(repoPath, '.cm', 'v' + vOrig, pathDiff);
+            oldVersionPath = path.join(repoPath, '.cm', vOrig.toString(), pathDiff);
         }
         if (vNew !== -1) {
-            newVersionPath = path.join(repoPath, '.cm', 'v' + vNew, pathDiff);
+            newVersionPath = path.join(repoPath, '.cm', vNew.toString(), pathDiff);
         }
 
         fs.readFile(oldVersionPath, (err, data) => {
@@ -160,6 +175,22 @@ function createWindow() {
                 });
             })
         })
+    });
+
+    ipcMain.on('dora-the-explorer', async (event, repoPath) => {
+        shell.openPath(repoPath);
+    });
+
+    ipcMain.on('open-in-terminal', async (event, repoPath) => {
+        if (os.platform() === 'win32') {
+            exec('start cmd', { cwd: repoPath });
+        }
+        else if (os.platform() === 'darwin') {
+            exec('open -a Terminal', { cwd: repoPath });
+        }
+        else if (['linux', 'openbsd', 'freebsd'].includes(os.platform())) {
+            exec('sh', { cwd: repoPath });
+        }
     });
 }
 app.on('ready', createWindow);

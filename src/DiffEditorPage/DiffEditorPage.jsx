@@ -6,7 +6,7 @@ import { Transition } from "@headlessui/react";
 import { useHistory } from "react-router";
 
 import { Menu } from "@headlessui/react";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { ChevronDownIcon } from "@heroicons/react/solid";
 
 const { ipcRenderer } = window.require("electron");
@@ -94,7 +94,7 @@ export default function DiffEditorPage(props) {
       );
       setCommitHistory(commitHistoryVersions);
     });
-  }, [repoPath, filePath, vOrig, vNew]);
+  }, [repoPath, filePath, vOrig, vNew, originalContent, newContent]);
 
   return (
     <>
@@ -138,6 +138,7 @@ export default function DiffEditorPage(props) {
           
         </div>
         <ReactDiffViewer
+          showDiffOnly={false}
           oldValue={originalContent}
           newValue={newContent}
           splitView={true}
@@ -147,3 +148,12 @@ export default function DiffEditorPage(props) {
     </>
   );
 }
+
+/*
+<ReactDiffViewer
+          oldValue={originalContent}
+          newValue={newContent}
+          splitView={true}
+          useDarkTheme={true}
+        />
+        */
