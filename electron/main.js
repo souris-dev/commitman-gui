@@ -36,6 +36,10 @@ function createWindow() {
         mainWindow = null;
     });
 
+    ipcMain.on('about-dialog-show', (event, arg) => {
+        event.reply('show-about-dialog', {show: true});
+    });
+
     ipcMain.on('open-repo', async (event, args) => {
         console.log("Open a repo.");
         const result = await dialog.showOpenDialog(mainWindow, {

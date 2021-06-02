@@ -194,211 +194,6 @@ export default function FileBrowserPage(props) {
     }
   };
 
-  const CompareDialog = () => (
-    <Transition appear show={compareDialogOpen} as={Fragment}>
-      <Dialog
-        as="div"
-        className="fixed inset-0 z-10 overflow-y-auto"
-        onClose={() => setCompareDialogOpen(false)}
-      >
-        <div className="min-h-screen px-4 text-center">
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <Dialog.Overlay className="fixed inset-0" />
-          </Transition.Child>
-
-          {/* This element is to trick the browser into centering the modal contents. */}
-          <span
-            className="inline-block h-screen align-middle"
-            aria-hidden="true"
-          >
-            &#8203;
-          </span>
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0 scale-95"
-            enterTo="opacity-100 scale-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100 scale-100"
-            leaveTo="opacity-0 scale-95"
-          >
-            <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
-              <Dialog.Title
-                as="h3"
-                className="text-xl font-medium leading-6 text-gray-900"
-              >
-                Choose Versions
-              </Dialog.Title>
-              <div className="mt-3 grid grid-cols-2 gap-x-7 gap-y-3">
-                <div>
-                  <h5 className="text-lg">From version</h5>
-                  <RadioGroup
-                    value={compareFromVersion}
-                    onChange={setCompareFromVersion}
-                  >
-                    <RadioGroup.Option value={-1}>
-                      {({ active, checked }) => {
-                        var clName =
-                          "py-2 px-3 border border-gray-500 rounded-md";
-                        if (active) {
-                          clName =
-                            "py-2 px-3 border border-gray-600 rounded-md";
-                        }
-                        if (checked) {
-                          clName =
-                            "py-2 px-3 border-2 border-indigo-600 rounded-md";
-                        }
-
-                        return (
-                          <div
-                            className={
-                              clName +
-                              " cursor-pointer mb-2 focus:outline-none focus:ring focus:border-indigo-600"
-                            }
-                          >
-                            Current
-                          </div>
-                        );
-                      }}
-                    </RadioGroup.Option>
-                    {commitHistory.map((commitItem) => {
-                      if (commitItem.number === 0) {
-                        // hide creation
-                        return <></>;
-                      }
-                      return (
-                        <RadioGroup.Option
-                          key={commitItem.number}
-                          value={commitItem.number}
-                        >
-                          {({ active, checked }) => {
-                            var clName =
-                              "py-2 px-3 border border-gray-500 rounded-md";
-                            if (active) {
-                              clName =
-                                "py-2 px-3 border border-gray-600 rounded-md";
-                            }
-                            if (checked) {
-                              clName =
-                                "py-2 px-3 border-2 border-indigo-600 rounded-md focus:outline-none focus:ring focus:border-indigo-600";
-                            }
-
-                            return (
-                              <div className={clName + " cursor-pointer mb-2"}>
-                                {"v" + commitItem.number.toString()}
-                              </div>
-                            );
-                          }}
-                        </RadioGroup.Option>
-                      );
-                    })}
-                  </RadioGroup>
-                </div>
-                <div>
-                  <h5 className="text-lg">To version</h5>
-                  <RadioGroup
-                    value={compareToVersion}
-                    onChange={setCompareToVersion}
-                  >
-                    <RadioGroup.Option value={-1}>
-                      {({ active, checked }) => {
-                        var clName =
-                          "py-2 px-3 border border-gray-500 rounded-md";
-                        if (active) {
-                          clName =
-                            "py-2 px-3 border border-gray-600 rounded-md";
-                        }
-                        if (checked) {
-                          clName =
-                            "py-2 px-3 border-2 border-indigo-600 rounded-md";
-                        }
-
-                        return (
-                          <div
-                            className={
-                              clName + " cursor-pointer mb-2 focus:outline-none"
-                            }
-                          >
-                            Current
-                          </div>
-                        );
-                      }}
-                    </RadioGroup.Option>
-                    {commitHistory.map((commitItem) => {
-                      if (commitItem.number === 0) {
-                        // hide creation
-                        return <></>;
-                      }
-                      return (
-                        <RadioGroup.Option
-                          key={commitItem.number}
-                          value={commitItem.number}
-                        >
-                          {({ active, checked }) => {
-                            var clName =
-                              "py-2 px-3 border border-gray-500 rounded-md";
-                            if (active) {
-                              clName =
-                                "py-2 px-3 border border-gray-600 rounded-md";
-                            }
-                            if (checked) {
-                              clName =
-                                "py-2 px-3 border-2 border-indigo-600 rounded-md";
-                            }
-
-                            return (
-                              <div
-                                className={
-                                  clName +
-                                  " cursor-pointer mb-2 focus:outline-none"
-                                }
-                              >
-                                {"v" + commitItem.number.toString()}
-                              </div>
-                            );
-                          }}
-                        </RadioGroup.Option>
-                      );
-                    })}
-                  </RadioGroup>
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <button
-                  type="button"
-                  className="inline-flex justify-center px-4 py-2 text-sm font-medium text-blue-900 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
-                  onClick={() => {
-                    setRedirectTo({
-                      to: "/ShowDiff",
-                      params: {
-                        filePath: clickedFilePath,
-                        fileName: clickedFileName,
-                        repoPath: repo.repoPath,
-                        vOrig: compareFromVersion,
-                        vNew: compareToVersion,
-                      },
-                    });
-                  }}
-                >
-                  Compare
-                </button>
-              </div>
-            </div>
-          </Transition.Child>
-        </div>
-      </Dialog>
-    </Transition>
-  );
-
   const CloseDialog = () => (
     <Transition appear show={isCloseModalOpen} as={Fragment}>
       <Dialog
@@ -846,7 +641,6 @@ export default function FileBrowserPage(props) {
     </div>
   );
 
-
   // Render everything:
 
   return (
@@ -857,7 +651,213 @@ export default function FileBrowserPage(props) {
       </div>
 
       {/*Compare dialog*/}
-      <CompareDialog />
+      {/*Note: Making a separate component out of this gives weird focus errors*/}
+      <Transition appear show={compareDialogOpen} as={Fragment}>
+        <Dialog
+          open={compareDialogOpen}
+          as="div"
+          className="fixed inset-0 z-10 overflow-y-auto"
+          onClose={() => setCompareDialogOpen(false)}
+        >
+          <div className="min-h-screen px-4 text-center">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <Dialog.Overlay className="fixed inset-0" />
+            </Transition.Child>
+
+            {/* This element is to trick the browser into centering the modal contents. */}
+            <span
+              className="inline-block h-screen align-middle"
+              aria-hidden="true"
+            >
+              &#8203;
+            </span>
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
+            >
+              <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+                <Dialog.Title
+                  as="h3"
+                  className="text-xl font-medium leading-6 text-gray-900"
+                >
+                  Choose Versions
+                </Dialog.Title>
+                <div className="mt-3 grid grid-cols-2 gap-x-7 gap-y-3">
+                  <div>
+                    <h5 className="text-lg">From version</h5>
+                    <RadioGroup
+                      value={compareFromVersion}
+                      onChange={setCompareFromVersion}
+                    >
+                      <RadioGroup.Option value={-1}>
+                        {({ active, checked }) => {
+                          var clName =
+                            "py-2 px-3 border border-gray-500 rounded-md";
+                          if (active) {
+                            clName =
+                              "py-2 px-3 border border-gray-600 rounded-md";
+                          }
+                          if (checked) {
+                            clName =
+                              "py-2 px-3 border-2 border-indigo-600 rounded-md";
+                          }
+
+                          return (
+                            <div
+                              className={
+                                clName +
+                                " cursor-pointer mb-2 focus:outline-none focus:ring focus:border-indigo-600"
+                              }
+                            >
+                              Current
+                            </div>
+                          );
+                        }}
+                      </RadioGroup.Option>
+                      {commitHistory.map((commitItem) => {
+                        if (commitItem.number === 0) {
+                          // hide creation
+                          return <></>;
+                        }
+                        return (
+                          <RadioGroup.Option
+                            key={commitItem.number}
+                            value={commitItem.number}
+                          >
+                            {({ active, checked }) => {
+                              var clName =
+                                "py-2 px-3 border border-gray-500 rounded-md";
+                              if (active) {
+                                clName =
+                                  "py-2 px-3 border border-gray-600 rounded-md";
+                              }
+                              if (checked) {
+                                clName =
+                                  "py-2 px-3 border-2 border-indigo-600 rounded-md focus:outline-none focus:ring focus:border-indigo-600";
+                              }
+
+                              return (
+                                <div
+                                  className={clName + " cursor-pointer mb-2"}
+                                >
+                                  {"v" + commitItem.number.toString()}
+                                </div>
+                              );
+                            }}
+                          </RadioGroup.Option>
+                        );
+                      })}
+                    </RadioGroup>
+                  </div>
+                  <div>
+                    <h5 className="text-lg">To version</h5>
+                    <RadioGroup
+                      value={compareToVersion}
+                      onChange={setCompareToVersion}
+                    >
+                      <RadioGroup.Option value={-1}>
+                        {({ active, checked }) => {
+                          var clName =
+                            "py-2 px-3 border border-gray-500 rounded-md";
+                          if (active) {
+                            clName =
+                              "py-2 px-3 border border-gray-600 rounded-md";
+                          }
+                          if (checked) {
+                            clName =
+                              "py-2 px-3 border-2 border-indigo-600 rounded-md";
+                          }
+
+                          return (
+                            <div
+                              className={
+                                clName +
+                                " cursor-pointer mb-2 focus:outline-none"
+                              }
+                            >
+                              Current
+                            </div>
+                          );
+                        }}
+                      </RadioGroup.Option>
+                      {commitHistory.map((commitItem) => {
+                        if (commitItem.number === 0) {
+                          // hide creation
+                          return <></>;
+                        }
+                        return (
+                          <RadioGroup.Option
+                            key={commitItem.number}
+                            value={commitItem.number}
+                          >
+                            {({ active, checked }) => {
+                              var clName =
+                                "py-2 px-3 border border-gray-500 rounded-md";
+                              if (active) {
+                                clName =
+                                  "py-2 px-3 border border-gray-600 rounded-md";
+                              }
+                              if (checked) {
+                                clName =
+                                  "py-2 px-3 border-2 border-indigo-600 rounded-md";
+                              }
+
+                              return (
+                                <div
+                                  className={
+                                    clName +
+                                    " cursor-pointer mb-2 focus:outline-none"
+                                  }
+                                >
+                                  {"v" + commitItem.number.toString()}
+                                </div>
+                              );
+                            }}
+                          </RadioGroup.Option>
+                        );
+                      })}
+                    </RadioGroup>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <button
+                    type="button"
+                    className="inline-flex justify-center px-4 py-2 text-sm font-medium text-blue-900 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
+                    onClick={() => {
+                      setRedirectTo({
+                        to: "/ShowDiff",
+                        params: {
+                          filePath: clickedFilePath,
+                          fileName: clickedFileName,
+                          repoPath: repo.repoPath,
+                          vOrig: compareFromVersion,
+                          vNew: compareToVersion,
+                        },
+                      });
+                    }}
+                  >
+                    Compare
+                  </button>
+                </div>
+              </div>
+            </Transition.Child>
+          </div>
+        </Dialog>
+      </Transition>
 
       {/*Close repo dialog*/}
       <CloseDialog />

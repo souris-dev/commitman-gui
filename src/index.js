@@ -5,14 +5,12 @@ import reportWebVitals from './reportWebVitals';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter as Router } from 'react-router-dom';
-import Routes from './Routes';
-import MenuBar from './MenuBar/MenuBar.jsx';
+import AppWithStore from './App';
 
 ReactDOM.render(
   <React.StrictMode>
     <Router>
-      <MenuBar />
-      <Routes />
+      <AppWithStore />
     </Router>
   </React.StrictMode>,
   document.getElementById('root')

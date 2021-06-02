@@ -44,9 +44,9 @@ export default function StartingPage() {
                                         ipcRenderer.send('open-repo');
                                     }}>Open repo</Button>
                                 </Col>
-                                <Col md="auto" lg="auto" sm="auto">
-                                    <Button variant="outline-success">View manual</Button>
-                                </Col>
+                                {/*<Col md="auto" lg="auto" sm="auto">
+                                    <Button variant="outline-success" onClick={() => {}}>View manual</Button>
+                                </Col>*/}
                             </Row>
                         </Container>
                     </header>
