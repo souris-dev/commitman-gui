@@ -569,7 +569,8 @@ export default function FileBrowserPage(props) {
               <span className="text-md  ml-2">Open in File Explorer</span>
             </div>
           </li>
-          <li className="flex w-full justify-between text-gray-400 hover:text-gray-200 cursor-pointer items-center">
+          <li className="flex w-full justify-between text-gray-400 hover:text-gray-200 cursor-pointer items-center"
+          onClick={() => setIsCloseModalOpen(true)}>
             <div className="flex items-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"

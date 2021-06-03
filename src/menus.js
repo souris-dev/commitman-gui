@@ -1,5 +1,5 @@
 //import { ipcRenderer, shell } from 'electron';
-const { ipcRenderer } = window.require('electron');
+const { ipcRenderer, remote } = window.require('electron');
 
 export const menus = [
   {
@@ -20,7 +20,7 @@ export const menus = [
       {
         label: 'Exit',
         click: (item, win, e) => {
-          ipcRenderer.invoke('exit-app');
+          remote.getCurrentWindow().close();
         }
       }
     ]
