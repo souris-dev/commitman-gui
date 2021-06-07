@@ -8,6 +8,6 @@
 
 4. Then run `npm run dev` to start the GUI.
 
-## Technology Stack
+## Built With
 
 This application is made using electron.js and React.js.
